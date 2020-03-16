@@ -61,7 +61,6 @@ export class Clock {
 
             if (interimClock.deltaTime <= 0) {
                 clearInterval(id);
-                console.log("Clock -> id -> clearInterval(id)", id)
             }
             this._render(interimClock);
          });
