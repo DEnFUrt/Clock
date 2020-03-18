@@ -9,60 +9,62 @@ YYYY-MM-DDTHH:mm:ss.sssZ, где Z часовой пояс в формате +-h
 */
 
 export class Clock {
-    constructor (timerId, endTime) {
-        this.endTime = endTime;
-        this.timer = document.querySelector(`#${timerId}`);
-        this.hours = this.timer.querySelector('.hours');
-        this.minutes = this.timer.querySelector('.minutes');
-        this.seconds = this.timer.querySelector('.seconds');
+    constructor(timerId) {
+      this.timer = document.querySelector(`#${timerId}`);
+      this.hours = this.timer.querySelector('.hours');
+      this.minutes = this.timer.querySelector('.minutes');
+      this.seconds = this.timer.querySelector('.seconds');
+  }
+
+  _currentTime(endTime) {
+    const deltaTime = Date.parse(endTime) - Date.now(),
+      seconds = Math.floor((deltaTime / 1000) % 60),
+      minutes = Math.floor((deltaTime / 1000 / 60) % 60),
+      hours = Math.floor((deltaTime / (1000 * 60 * 60)));
+
+    return {
+      deltaTime,
+      hours,
+      minutes,
+      seconds,
+    }
+  }
+
+  _addLeadZero(tempTime) {
+    let clockLED;
+
+    switch (true) {
+      case tempTime < 0:
+        clockLED = '00';
+        break;
+      case tempTime <= 9:
+        clockLED = `0${tempTime.toString()}`;
+        break;
+      default:
+        clockLED = tempTime.toString();
     }
 
-    _getTime () {
-        const deltaTime = Date.parse(this.endTime) - Date.now(),
-            seconds = Math.floor( (deltaTime / 1000) % 60 ),
-            minutes = Math.floor( (deltaTime / 1000 / 60) % 60),
-            hours = Math.floor( (deltaTime / (1000 * 60 * 60)) );
-    
-        return {
-            deltaTime,
-            hours,
-            minutes,
-            seconds,
-        }
-    }
+    return clockLED;
+  }
 
-    _addLeadZero (tempTime) {
-        let clockLED;
-        
-        switch(true) {
-            case tempTime < 0 :
-                clockLED = '00';
-                break;
-            case tempTime <= 9 :
-                clockLED = `0${tempTime.toString()}`;
-                break;
-            default :
-                clockLED = tempTime.toString();
-                break; 
-        }
-    
-        return clockLED;
-    }
+  _render(interimClock) {
+    this.hours.textContent = this._addLeadZero(interimClock.hours);
+    this.minutes.textContent = this._addLeadZero(interimClock.minutes);
+    this.seconds.textContent = this._addLeadZero(interimClock.seconds);
+  }
 
-    _render(interimClock) {
-        this.hours.textContent = this._addLeadZero(interimClock.hours);
-        this.minutes.textContent = this._addLeadZero(interimClock.minutes);
-        this.seconds.textContent = this._addLeadZero(interimClock.seconds);
-    }
+  start(endTime) {
+    this.id = setInterval(() => {
+      let interimClock = this._currentTime(endTime);
 
-    start() {
-        const id = setInterval( () => {
-            let interimClock = this._getTime();
+      if (interimClock.deltaTime <= 0) {
+        this.stop();
+      }
+      this._render(interimClock);
+    }, 1000);
+  }
 
-            if (interimClock.deltaTime <= 0) {
-                clearInterval(id);
-            }
-            this._render(interimClock);
-         });
-    }
+  stop() {
+    clearInterval(this.id);
+  }
 }
